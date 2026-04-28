@@ -1,0 +1,36 @@
+# ----------------------------------------------------------------------------
+# hello-web Deployment — a containerized workload deployed alongside VMs.
+#
+# Source:       Authored for this course.
+# Why a plain Deployment (no Service): KKP's Imported External Cluster view
+#               does not provide a per-cluster Workloads browser, so the
+#               unified VM + container view is delivered by Kubernetes itself
+#               via `kubectl get all,vm`, not by KKP. A Deployment with no
+#               Service is enough to make that point.
+# Used in:      Chapter 08 Step 6 — Apply this alongside testvm + ubuntu-vm,
+#               then run `kubectl get all,vm` to see VMs and containers in
+#               one listing.
+# Image:        nginxdemos/hello:plain-text — 1-replica, ~10 MB, prints
+#                the hostname/address.
+# ----------------------------------------------------------------------------
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-web
+  labels:
+    app: hello-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-web
+  template:
+    metadata:
+      labels:
+        app: hello-web
+    spec:
+      containers:
+        - name: web
+          image: nginxdemos/hello:plain-text
+          ports:
+            - containerPort: 80

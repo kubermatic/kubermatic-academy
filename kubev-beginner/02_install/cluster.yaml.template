@@ -1,0 +1,50 @@
+# ----------------------------------------------------------------------------
+# KubeVCluster configuration — cluster.yaml.template (v1.1.0)
+#
+# Generated from:  kubev config print ... (v1.1.0 default shape)
+#                  Then envsubst'd into cluster.yaml with the learner's
+#                  specific IPs, MetalLB range, and SSH key path.
+# Used in:         Chapter 03 — `kubev apply -f cluster.yaml -y`
+# Expanded by:     the learner — source $LAB_ENV_FILE, then
+#                    envsubst < cluster.yaml.template > cluster.yaml
+# Env vars:        $CP_INTERNAL_IP, $WORKER_INTERNAL_IP, $METALLB_RANGE, $SSH_KEY_PATH
+#                  (sourced from $LAB_ENV_FILE, default ~/.kubev-lab.env)
+# Docs:            https://docs.kubermatic.com/kubermatic-virtualization/v1.1.0/installation/declarative-installation/
+# ----------------------------------------------------------------------------
+apiVersion: virtualization.k8c.io/v1alpha1
+kind: KubeVCluster
+networkConfiguration:
+  dnsServerIP: 8.8.8.8
+  gatewayIP: 10.244.0.1
+  networkCIDR: 10.244.0.0/16
+  serviceCIDR: 10.96.0.0/12
+controlPlane:
+  hosts:
+  - address: $CP_INTERNAL_IP
+    sshPrivateKeyFile: $SSH_KEY_PATH
+    sshUsername: root
+staticWorkers:
+  hosts:
+  - address: $WORKER_INTERNAL_IP
+    sshPrivateKeyFile: $SSH_KEY_PATH
+    sshUsername: root
+loadBalancer:
+  metallb:
+    ipRange: $METALLB_RANGE
+storage:
+  longhorn: {}
+# kubevirt.developerConfiguration — new in v1.1.0. Default-empty feature gates
+# is fine for the beginner track; `useEmulation: false` is correct for a real
+# cluster with hardware virtualization (our GCE VMs have nested-virt enabled
+# via --enable-nested-virtualization).
+kubevirt:
+  developerConfiguration:
+    featureGates: []
+    useEmulation: false
+# idp.none — cluster-level identity provider disabled. Auth is handled
+# per-component (the dashboard's own auth mode; Kubernetes RBAC via kubeconfig).
+idp:
+  none: {}
+# dashboard section intentionally omitted for the first install. Chapter 09
+# (Kubermatic Virtualization Dashboard) adds it with auth.basic or auth.none
+# and re-runs `kubev apply` to reconcile.

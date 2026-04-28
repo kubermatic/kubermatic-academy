@@ -1,0 +1,61 @@
+# ----------------------------------------------------------------------------
+# Ubuntu 22.04 VirtualMachine — the "first VM" of the beginner course.
+#
+# Source:       quay.io/containerdisks/ubuntu:22.04 (kubevirt/containerdisks org).
+#               Cloud-init compatible, default user "ubuntu", standard apt.
+# Used in:      Chapter 04 — Your First Cloud-Native VM.
+# Why Ubuntu (not CirrOS):
+#   - CirrOS's cloud-init implementation rejected `ssh_authorized_keys` in our
+#     live-test on 2026-04-22. Ubuntu's cloud-init is reliable.
+#   - python3 is available out of the box (used by Ch06's http.server).
+#   - Larger image (~600 MB vs CirrOS's 12 MB), but the boot-time delta is
+#     ~30s vs ~5s — acceptable for a "first VM" lesson.
+# Notes:
+#   - cloud-init sets `password: ubuntu` so console login works without an SSH
+#     key. Ch05 introduces SSH keys via cloud-init.
+#   - 1 GiB RAM is the practical minimum for Ubuntu; bumping to 2 GiB makes
+#     subsequent operations (apt install, python http.server) snappier but
+#     costs more on cloud lab hardware.
+# ----------------------------------------------------------------------------
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: testvm
+spec:
+  runStrategy: Halted
+  template:
+    metadata:
+      labels:
+        kubevirt.io/size: small
+        kubevirt.io/domain: testvm
+    spec:
+      domain:
+        devices:
+          disks:
+            - name: containerdisk
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              masquerade: {}
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "1"
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: containerdisk
+          containerDisk:
+            image: quay.io/containerdisks/ubuntu:22.04
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              password: ubuntu
+              chpasswd: { expire: False }
+              ssh_pwauth: True

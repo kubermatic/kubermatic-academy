@@ -1,0 +1,93 @@
+# ----------------------------------------------------------------------------
+# Ubuntu VM — dataVolumeTemplates variant (clone-per-VM root disk pattern).
+#
+# Source:       Adapted from cloudnativetrainings/kubev/my-vm.yaml
+# Adaptations:  - Renamed: my-vm → ubuntu-vm-2 (so it coexists with Part B's
+#                 ubuntu-vm in the learner's namespace).
+#               - Swapped `bridge` interface for `masquerade` (pedagogical
+#                 consistency with Ch04-06 of this course; bridge is
+#                 covered as a production path in lab-guide Part C text).
+#               - Swapped runStrategy: RerunOnFailure → Halted (so the tape
+#                 can demo `virtctl start` the same way Part B does).
+#               - Replaced cloud-init with ssh_authorized_keys + $SSH_PUBKEY
+#                 placeholder (Hubert's original delegated this to a
+#                 separately-included user-data.yaml).
+#               - Changed source.pvc.namespace from `default` to $VM_NAMESPACE
+#                 because the learner's ubuntu-dv lives in kubev-lab-$USER,
+#                 not in the cluster default namespace. Validation finding G3
+#                 in sprint-kubev-beginner-validation-findings.md.
+# Used in:      Chapter 07 Part C — production pattern: dataVolumeTemplates.
+# Expanded by:  chapter-07-vm-storage/pre-record.sh via envsubst
+# Env var:      $SSH_PUBKEY
+# Notes:        The dataVolumeTemplates block clones from the existing
+#               ubuntu-dv PVC (Part B) — a learner reading the two
+#               manifests side-by-side sees:
+#                 Part B: ubuntu-dv (standalone) + ubuntu-vm (references by name)
+#                 Part C: ubuntu-dv + ubuntu-vm-2 (clones via dataVolumeTemplates)
+#               Lifecycle difference: Part C's per-VM PVC is deleted when the
+#               VM is deleted. Part B's is not.
+# ----------------------------------------------------------------------------
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu-vm-2
+  labels:
+    kubevirt.io/domain: ubuntu-vm-2
+spec:
+  runStrategy: Halted
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: ubuntu-vm-2
+    spec:
+      domain:
+        cpu:
+          cores: 1
+        devices:
+          disks:
+            - name: rootdisk
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              masquerade: {}
+        # 1Gi RAM + 250m CPU lets all three VMs (testvm + ubuntu-vm +
+        # ubuntu-vm-2) co-schedule on a single 4-vCPU worker. Bump for
+        # real workloads.
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "250m"
+      volumes:
+        - name: rootdisk
+          dataVolume:
+            name: root-volume
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              ssh_pwauth: true
+              ssh_authorized_keys:
+                - $SSH_PUBKEY
+      networks:
+        - name: default
+          pod: {}
+  dataVolumeTemplates:
+    - metadata:
+        name: root-volume
+      spec:
+        source:
+          pvc:
+            namespace: $VM_NAMESPACE
+            name: ubuntu-dv
+        pvc:
+          accessModes:
+            - ReadWriteOnce
+          volumeMode: Filesystem
+          storageClassName: longhorn
+          resources:
+            requests:
+              storage: 10Gi

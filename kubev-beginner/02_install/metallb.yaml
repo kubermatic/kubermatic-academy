@@ -1,0 +1,32 @@
+# ----------------------------------------------------------------------------
+# MetalLB IPAddressPool + L2Advertisement
+#
+# Source:       Adapted from cloudnativetrainings/kubev/metallb.yaml
+# Used in:      Chapter 03 — optional fallback if the kubev installer's
+#               MetalLB IPPool reconciliation lags (see upstream issue
+#               kubermatic/kubermatic-virtualization#149). Not applied in
+#               the default Ch03 path; referenced in the troubleshooting
+#               section of the lab-guide.
+# Adaptations:  Replaced Hubert's hardcoded 192.168.99.x range with
+#               `$METALLB_RANGE`; single entry with `addresses:` list so
+#               envsubst can inject a range (10.156.0.200-10.156.0.204
+#               or equivalent).
+# ----------------------------------------------------------------------------
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: vpc-vms
+  namespace: metallb-system
+spec:
+  addresses:
+    - $METALLB_RANGE
+
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: vpc-vms-advertisement
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - vpc-vms

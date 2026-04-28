@@ -1,0 +1,24 @@
+# ----------------------------------------------------------------------------
+# Empty PVC used as a secondary (hotplugged) disk for testvm.
+#
+# Source:       Authored for this course.
+# Used in:      Chapter 07 Part A — Attach a PVC to testvm.
+# Reference:    https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+#               https://kubevirt.io/user-guide/storage/hotplug_volumes/
+#
+# volumeMode: Block — required on KubeVirt 1.5.x + Longhorn for hotplug to
+# actually surface the disk inside the guest. With the default Filesystem
+# mode the volume reaches AttachedToNode but never crosses into QEMU; with
+# Block mode it appears as /dev/sda within ~15s of `virtctl addvolume`.
+# ----------------------------------------------------------------------------
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-disk
+spec:
+  volumeMode: Block
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi

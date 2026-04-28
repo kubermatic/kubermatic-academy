@@ -1,0 +1,61 @@
+# ----------------------------------------------------------------------------
+# Ubuntu 22.04 VirtualMachine — boots from the standalone ubuntu-dv DV.
+#
+# Source:       Authored for this course; cross-referenced against Hubert's
+#               my-vm.yaml (which uses the dataVolumeTemplates pattern
+#               instead — that's covered in Part C).
+# Used in:      Chapter 07 Part B — standalone DV + referencing VM.
+# Expanded by:  chapter-07-vm-storage/pre-record.sh via envsubst
+# Env var:      $SSH_PUBKEY
+# Notes:        - Masquerade + pod network (pedagogical consistency with Ch04-06;
+#                 Hubert uses bridge networking for Ch07+ in the production path —
+#                 we call out the difference in the lab-guide).
+#               - 1Gi RAM + 250m CPU — fits alongside testvm (1 CPU)
+#                 and ubuntu-vm-2 on a single 4-vCPU worker. Bumping to
+#                 2Gi/1CPU is the recommended size for real workloads;
+#                 we down-size for the lab so all three VMs in this
+#                 chapter co-schedule on one node.
+# ----------------------------------------------------------------------------
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: ubuntu-vm
+  labels:
+    kubevirt.io/domain: ubuntu-vm
+spec:
+  runStrategy: Halted
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: ubuntu-vm
+    spec:
+      domain:
+        devices:
+          disks:
+            - name: bootdisk
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              masquerade: {}
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "250m"
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: bootdisk
+          dataVolume:
+            name: ubuntu-dv
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              ssh_pwauth: true
+              ssh_authorized_keys:
+                - $SSH_PUBKEY

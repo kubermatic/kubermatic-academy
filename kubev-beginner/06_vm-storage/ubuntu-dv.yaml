@@ -1,0 +1,26 @@
+# ----------------------------------------------------------------------------
+# CDI DataVolume — imports the Ubuntu 22.04 cloud image into a PVC.
+#
+# Source:       Adapted from cloudnativetrainings/kubev/ubuntu-image-datavolume.yaml
+# Adaptations:  - 24.04-minimal → 22.04 (LTS; matches our lab-guide narrative
+#                 and provides cloud-init behaviour that is stable across
+#                 KubeVirt versions)
+#               - Removed hardcoded namespace: default — applied into the
+#                 learner's own namespace by `kubectl apply -f` in-context
+# Used in:      Chapter 07 Part B — standalone DataVolume + referencing VM.
+# Reference:    https://github.com/kubevirt/containerized-data-importer/blob/main/doc/datavolumes.md
+# ----------------------------------------------------------------------------
+apiVersion: cdi.kubevirt.io/v1beta1
+kind: DataVolume
+metadata:
+  name: ubuntu-dv
+spec:
+  source:
+    http:
+      url: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
+  pvc:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi

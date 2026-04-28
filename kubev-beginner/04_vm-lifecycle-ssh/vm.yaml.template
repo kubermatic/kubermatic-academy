@@ -1,0 +1,58 @@
+# ----------------------------------------------------------------------------
+# Ubuntu 22.04 VirtualMachine with cloud-init SSH key — testvm re-applied.
+#
+# Source:       Authored for this course; same containerDisk image as
+#               assets/labs-repo-scaffold/03_first-vm/vm.yaml
+#               (quay.io/containerdisks/ubuntu:22.04). Cross-referenced against
+#               KubeVirt docs:
+#               https://kubevirt.io/user-guide/user_workloads/startup_scripts/
+# Used in:      Chapter 05 — VM Lifecycle & SSH Access (Step 8).
+# Expanded by:  chapter-05-vm-lifecycle-ssh/pre-record.sh via envsubst
+# Env var:      $SSH_PUBKEY (exported by pre-record.sh from ~/.ssh/id_ed25519.pub)
+# Notes:
+#   - runStrategy: Halted so the lab can demo `virtctl start` after apply.
+#   - Resources match Ch04 (1Gi RAM, 1 vCPU) — same VM shape, just with an
+#     SSH-key-injecting cloud-init block instead of password auth.
+# ----------------------------------------------------------------------------
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: testvm
+spec:
+  runStrategy: Halted
+  template:
+    metadata:
+      labels:
+        kubevirt.io/size: small
+        kubevirt.io/domain: testvm
+    spec:
+      domain:
+        devices:
+          disks:
+            - name: containerdisk
+              disk:
+                bus: virtio
+            - name: cloudinitdisk
+              disk:
+                bus: virtio
+          interfaces:
+            - name: default
+              masquerade: {}
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: "1"
+      networks:
+        - name: default
+          pod: {}
+      volumes:
+        - name: containerdisk
+          containerDisk:
+            image: quay.io/containerdisks/ubuntu:22.04
+        - name: cloudinitdisk
+          cloudInitNoCloud:
+            userData: |
+              #cloud-config
+              ssh_pwauth: False
+              ssh_authorized_keys:
+                - $SSH_PUBKEY

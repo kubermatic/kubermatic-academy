@@ -1,0 +1,20 @@
+# ----------------------------------------------------------------------------
+# Hand-written NodePort Service exposing testvm on port 80.
+#
+# Source:       Authored for this course. Pedagogical twin of the Service
+#               that `virtctl expose` creates in Ch06 Step 6 — shows the
+#               learner that `virtctl expose` is just Service YAML.
+# Used in:      Chapter 06 Step 9 (hand-written Service variant).
+# Reference:    https://kubevirt.io/user-guide/network/service_objects/
+# ----------------------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-svc
+spec:
+  type: NodePort
+  selector:
+    kubevirt.io/domain: testvm
+  ports:
+    - port: 80
+      targetPort: 80
