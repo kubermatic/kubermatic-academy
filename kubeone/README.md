@@ -28,7 +28,7 @@ Folders exist only for chapters that ship a file. The number prefix is the cours
 | Folder | Chapter | Files |
 |--------|---------|-------|
 | `03_terraform/` | Ch03 — Provision Infrastructure with Terraform | `terraform.tfvars.example` (values for KubeOne's `examples/terraform/hetzner`) |
-| `10_helm-releases/` | Ch10 — Helm Releases & Real Apps | `helm-releases.yaml` (ingress-nginx and cert-manager as KubeOne `helmReleases`), `cluster-issuer.yaml` |
+| `10_helm-releases/` | Ch10 — Helm Releases & Real Apps | `helm-releases.yaml` (Envoy Gateway and cert-manager as KubeOne `helmReleases`), `gateway.yaml` (EnvoyProxy, GatewayClass, Gateway), `cluster-issuer.yaml`, `gateway-https.yaml` and `httproute.yaml` (both take `${DOMAIN}` through `envsubst`) |
 | `12_backup/` | Ch12 — Backup & User Data | `storageclass.yaml` (`my-storageclass` on the hcloud CSI driver), `credentials-velero.template` |
 
 ## `.template` files

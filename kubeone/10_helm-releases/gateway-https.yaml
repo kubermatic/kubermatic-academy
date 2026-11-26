@@ -1,0 +1,36 @@
+# KubeOne Practitioner course, Chapter 10 (Helm Releases & Real Apps).
+#
+# The Gateway from gateway.yaml with an HTTPS listener for the training
+# domain. The cert-manager.io/cluster-issuer annotation makes cert-manager
+# create the Certificate training-tls in the gateway namespace.
+# https://cert-manager.io/docs/usage/gateway/
+#
+# ${DOMAIN} is <gateway-ip>.sslip.io from Step 5 of the lab:
+#   envsubst '$DOMAIN' < 10_helm-releases/gateway-https.yaml | kubectl apply -f -
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: training-gateway
+  namespace: gateway
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-issuer
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All
+    - name: https
+      protocol: HTTPS
+      port: 443
+      hostname: ${DOMAIN}
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: training-tls
