@@ -10,3 +10,12 @@ credentials-velero
 *.tfstate
 *.tfstate.backup
 .terraform/
+
+# Chapter 10 writes these manifests into the working directory. The leading
+# slash matches only this folder, so the copies in 10_helm-releases/ stay
+# tracked.
+/gateway.yaml
+/gateway-https.yaml
+/cluster-issuer.yaml
+/httproute.yaml
+/training-application-values.yaml

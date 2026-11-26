@@ -4,9 +4,11 @@
 # storageClassName: my-storageclass on its PersistentVolumeClaim, and the
 # chart has no value to change it. This file creates a class with that name.
 #
-# It uses the same Hetzner Cloud CSI driver and settings as the class
-# hcloud-volumes that KubeOne installs. It is not marked as default, so the
-# cluster keeps exactly one default StorageClass (hcloud-volumes).
+# The cluster has no StorageClass before this file. KubeOne installs the
+# Hetzner Cloud CSI driver, but its addon (addons/csi-hetzner/Kustomization
+# in v1.13.7) deletes the driver's own hcloud-volumes class, so there is no
+# default class either. This class uses the CSI driver csi.hetzner.cloud. It
+# is not marked as default, because the chart asks for it by name.
 #
 # reclaimPolicy Delete: when the PVC is deleted, the PersistentVolume and the
 # Hetzner volume behind it are deleted too. In this lab that means a restore

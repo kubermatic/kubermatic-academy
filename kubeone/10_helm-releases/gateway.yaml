@@ -1,10 +1,13 @@
 # KubeOne Practitioner course, Chapter 10 (Helm Releases & Real Apps).
 #
-# - EnvoyProxy hetzner-lb: two Envoy replicas, and two annotations on the
-#   LoadBalancer Service that Envoy Gateway creates for each Gateway. The
-#   hcloud cloud controller manager refuses to create a load balancer without
-#   a location or network zone. ipv6-disabled leaves the load balancer with a
-#   single IPv4 address, which the lab turns into <ip>.sslip.io.
+# - EnvoyProxy hetzner-lb: two Envoy replicas, a PodDisruptionBudget that
+#   keeps at least one of them running during a node drain (Chapter 13
+#   upgrade), and two annotations on the LoadBalancer Service that Envoy
+#   Gateway creates for each Gateway. The hcloud cloud controller manager
+#   refuses to create a load balancer without a location or network zone.
+#   ipv6-disabled gives the load balancer no IPv6 address. The Gateway lists
+#   the public IPv4 address first and the load balancer's private IP after
+#   it; the lab turns status.addresses[0] into <ip>.sslip.io.
 # - GatewayClass eg: hands Gateways to Envoy Gateway and points at the
 #   EnvoyProxy.
 # - Gateway gateway/training-gateway: one HTTP listener on port 80. Step 7 of
@@ -24,6 +27,8 @@ spec:
     kubernetes:
       envoyDeployment:
         replicas: 2
+      envoyPDB:
+        minAvailable: 1
       envoyService:
         annotations:
           load-balancer.hetzner.cloud/location: nbg1

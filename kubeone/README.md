@@ -15,7 +15,7 @@ cd kubermatic-academy/kubeone
 
 Every lab runs from this folder, and the labs create their working files here. These are `tf-infra/` (Terraform state), `kubeone.yaml`, `kubeone-kubeconfig` and the exported `md-*.yaml` MachineDeployments. `.gitignore` keeps them out of Git, because they hold credentials and cluster state.
 
-The course's `lab-setup.md` lists the tools and accounts you need. They are `kubectl`, `terraform`, the `hcloud` CLI, `helm`, `jq`, the AWS CLI (Chapter 12 only) and a Hetzner Cloud project with a Read & Write API token in `HCLOUD_TOKEN`.
+The course's `lab-setup.md` lists the tools and accounts you need. They are `kubectl`, `terraform`, the `hcloud` CLI, `helm`, `jq`, `envsubst` (from GNU gettext, Chapters 10 and 12), the AWS CLI (Chapters 12 and 15) and a Hetzner Cloud project with a Read & Write API token in `HCLOUD_TOKEN`.
 
 ## Attribution
 
@@ -28,7 +28,7 @@ Folders exist only for chapters that ship a file. The number prefix is the cours
 | Folder | Chapter | Files |
 |--------|---------|-------|
 | `03_terraform/` | Ch03 — Provision Infrastructure with Terraform | `terraform.tfvars.example` (values for KubeOne's `examples/terraform/hetzner`) |
-| `10_helm-releases/` | Ch10 — Helm Releases & Real Apps | `helm-releases.yaml` (Envoy Gateway and cert-manager as KubeOne `helmReleases`), `gateway.yaml` (EnvoyProxy, GatewayClass, Gateway), `cluster-issuer.yaml`, `gateway-https.yaml` and `httproute.yaml` (both take `${DOMAIN}` through `envsubst`) |
+| `10_helm-releases/` | Ch10 — Helm Releases & Real Apps | `helm-releases.yaml` (Envoy Gateway and cert-manager as KubeOne `helmReleases`), `gateway.yaml` (EnvoyProxy with a PodDisruptionBudget, GatewayClass, Gateway), `cluster-issuer.yaml`, `gateway-https.yaml` and `httproute.yaml` (both take `${DOMAIN}` through `envsubst`) |
 | `12_backup/` | Ch12 — Backup & User Data | `storageclass.yaml` (`my-storageclass` on the hcloud CSI driver), `credentials-velero.template` |
 
 ## `.template` files
