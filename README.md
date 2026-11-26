@@ -9,6 +9,7 @@ Each course folder pairs with a video curriculum. The files here are the manifes
 | Course | Path | Status |
 |--------|------|--------|
 | KubeV Beginner | [`kubev-beginner/`](./kubev-beginner) | Initial import |
+| KubeOne Practitioner | [`kubeone/`](./kubeone) | Hetzner Cloud labs, before recording |
 
 ## Contributing
 

@@ -1,0 +1,67 @@
+# KubeOne Practitioner course, Chapter 10 (Helm Releases & Real Apps).
+#
+# - EnvoyProxy hetzner-lb: two Envoy replicas, a PodDisruptionBudget that
+#   keeps at least one of them running during a node drain (Chapter 13
+#   upgrade), and two annotations on the LoadBalancer Service that Envoy
+#   Gateway creates for each Gateway. The hcloud cloud controller manager
+#   refuses to create a load balancer without a location or network zone.
+#   ipv6-disabled gives the load balancer no IPv6 address. The Gateway lists
+#   the public IPv4 address first and the load balancer's private IP after
+#   it; the lab turns status.addresses[0] into <ip>.sslip.io.
+# - GatewayClass eg: hands Gateways to Envoy Gateway and points at the
+#   EnvoyProxy.
+# - Gateway gateway/training-gateway: one HTTP listener on port 80. Step 7 of
+#   the lab adds the HTTPS listener (gateway-https.yaml) once the domain is
+#   known.
+#
+#   kubectl apply -f 10_helm-releases/gateway.yaml
+#   kubectl -n gateway wait gateway/training-gateway --for=condition=Programmed --timeout=300s
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: hetzner-lb
+  namespace: envoy-gateway-system
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        replicas: 2
+      envoyPDB:
+        minAvailable: 1
+      envoyService:
+        annotations:
+          load-balancer.hetzner.cloud/location: nbg1
+          load-balancer.hetzner.cloud/ipv6-disabled: "true"
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: eg
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: hetzner-lb
+    namespace: envoy-gateway-system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gateway
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: training-gateway
+  namespace: gateway
+spec:
+  gatewayClassName: eg
+  listeners:
+    - name: http
+      protocol: HTTP
+      port: 80
+      allowedRoutes:
+        namespaces:
+          from: All

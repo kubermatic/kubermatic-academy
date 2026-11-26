@@ -1,0 +1,41 @@
+# KubeOne Practitioner course, Chapter 10 (Helm Releases & Real Apps).
+#
+# Based on github.com/cloudnativetrainings/advanced-operations-of-kubernetes-with-kubeone
+# 09_helm-releases/README.md (commit b528898). That lab used ingress-nginx.
+# The Kubernetes project retired ingress-nginx (announced 2025-11-11,
+# best-effort maintenance ended March 2026), so this course uses the Gateway
+# API with Envoy Gateway:
+# https://kubernetes.io/blog/2025/11/11/ingress-nginx-retirement/
+#
+# - Envoy Gateway v1.10.0 supports Kubernetes 1.34-1.37
+#   (https://gateway.envoyproxy.io/news/releases/matrix/). The chart is an OCI
+#   artifact, so the release sets chartURL, and KubeOne then requires
+#   releaseName. Keep `chart: gateway-helm`: on later applies KubeOne compares
+#   it with the installed chart's name. The chart also installs the Gateway
+#   API CRDs.
+# - cert-manager v1.21.3 supports Kubernetes 1.33-1.36
+#   (https://cert-manager.io/docs/releases/). config.gatewayAPI.enabled turns
+#   on its Gateway API support; the older enableGatewayAPI field is
+#   deprecated in 1.21. cert-manager looks for the Gateway API CRDs at
+#   startup, so it comes after Envoy Gateway in the list.
+#
+# Append this block to kubeone.yaml, then run kubeone apply:
+#   cat 10_helm-releases/helm-releases.yaml >> kubeone.yaml
+helmReleases:
+  - releaseName: envoy-gateway
+    chart: gateway-helm
+    chartURL: oci://docker.io/envoyproxy/gateway-helm
+    namespace: envoy-gateway-system
+    version: v1.10.0
+  - releaseName: cert-manager
+    chart: cert-manager
+    repoURL: https://charts.jetstack.io
+    namespace: cert-manager
+    version: v1.21.3
+    values:
+      - inline:
+          crds:
+            enabled: true
+          config:
+            gatewayAPI:
+              enabled: true

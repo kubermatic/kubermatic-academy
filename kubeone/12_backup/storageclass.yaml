@@ -1,0 +1,27 @@
+# KubeOne Practitioner course, Chapter 12 (Backup & User Data).
+#
+# The training-application chart (version 1.0.1, templates/pvc.yaml) sets
+# storageClassName: my-storageclass on its PersistentVolumeClaim, and the
+# chart has no value to change it. This file creates a class with that name.
+#
+# The cluster has no StorageClass before this file. KubeOne installs the
+# Hetzner Cloud CSI driver, but its addon (addons/csi-hetzner/Kustomization
+# in v1.13.7) deletes the driver's own hcloud-volumes class, so there is no
+# default class either. This class uses the CSI driver csi.hetzner.cloud. It
+# is not marked as default, because the chart asks for it by name.
+#
+# reclaimPolicy Delete: when the PVC is deleted, the PersistentVolume and the
+# Hetzner volume behind it are deleted too. In this lab that means a restore
+# can only get its data back from the backup bucket.
+#
+# Hetzner volumes are at least 10 GB and live in one location. A PVC that
+# asks for less gets a 10 GB volume in the location of the node that runs
+# the pod (WaitForFirstConsumer).
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: my-storageclass
+provisioner: csi.hetzner.cloud
+reclaimPolicy: Delete
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
