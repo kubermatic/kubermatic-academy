@@ -7,17 +7,19 @@
 #
 # Everything the course does not set keeps the example's default:
 #   control_plane_vm_count             = 3       (three control-plane servers)
-#   control_plane_type / worker_type   = "cx23"  (2 vCPU, 4 GB)
 #   initial_machinedeployment_replicas = 2       (two workers, created in Chapter 4)
 #   datacenter                         = "nbg1"  (a Hetzner location: Nuremberg)
 #   lb_type                            = "lb11"
 #
-# If cx23 is not available in your location, uncomment the two lines below.
 # The Hetzner API token is NOT set here. Terraform reads it from the
 # HCLOUD_TOKEN environment variable.
 
 cluster_name        = "k1-lab"
 ssh_public_key_file = "~/.ssh/kubeone_lab.pub"
 
-# control_plane_type = "cpx22"
-# worker_type        = "cpx22"
+# The example's default server type is cx23 (Cost-Optimized, 2 vCPU, 4 GB).
+# CX types are often sold out, so the course uses cpx22 (Regular Performance,
+# 2 vCPU, 4 GB) for the control plane and the workers. cx23 costs about a third
+# as much. If it is in stock in your location, change both values to "cx23".
+control_plane_type  = "cpx22"
+worker_type         = "cpx22"
