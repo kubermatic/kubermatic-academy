@@ -1,0 +1,21 @@
+# Source: github.com/cloudnativetrainings/advanced-operations-of-kubernetes-with-kubeone
+#         09_helm-releases/cluster-issuer.yaml (commit b528898).
+# Changed for the Hetzner Cloud course (Chapter 10): the email field is removed.
+# An ACME account does not need a contact address, and Let's Encrypt rejects
+# placeholder addresses such as your-email@example.com. Add
+# `email: "<your address>"` under spec.acme if you want one on the account.
+#
+#   kubectl apply -f 10_helm-releases/cluster-issuer.yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-issuer
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-dns
+    solvers:
+      - http01:
+          ingress:
+            class: nginx

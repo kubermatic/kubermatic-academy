@@ -1,0 +1,12 @@
+# Files the KubeOne Practitioner labs generate inside this folder.
+# They hold cluster state, credentials and kubeconfigs: never commit them.
+tf-infra/
+kubeone-*/
+v*.tar.gz
+kubeone.yaml
+kubeone-kubeconfig
+md-*.yaml
+credentials-velero
+*.tfstate
+*.tfstate.backup
+.terraform/
